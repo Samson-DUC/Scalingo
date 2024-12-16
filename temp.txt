@@ -1,0 +1,130 @@
+<div class="container">
+  <h2>Employee List</h2>
+  <?php
+    $host = getenv('MYSQL_HOST') ?: 'mysqlserversamson123.mysql.database.azure.com';
+    $username = getenv('MYSQL_USER') ?: 'mysqladmin@mysqlserversamson123';
+    $password = getenv('MYSQL_PASSWORD') ?: 'YourMysqlSecurePassword123';
+    $database = getenv('MYSQL_DATABASE') ?: 'your_database_name';
+
+    $mysqli = mysqli_init();
+    mysqli_ssl_set($mysqli, NULL, NULL, NULL, NULL, NULL);
+
+    if (!$mysqli->real_connect($host, $username, $password, $database, 3306, NULL, MYSQLI_CLIENT_SSL)) {
+        die("Connection failed: " . mysqli_connect_error());
+    }
+
+    echo "Connected successfully to the MySQL database!";
+
+    $result = $mysqli->query("SELECT id, name FROM employees");
+
+    if ($result && $result->num_rows > 0) {
+        echo "<ul>";
+        while ($row = $result->fetch_assoc()) {
+            echo "<li>ID: " . $row["id"] . " - Name: " . $row["name"] . "</li>";
+        }
+        echo "</ul>";
+    } else {
+        echo "No employees found.";
+    }
+
+    $mysqli->close();
+  ?>
+</div>
+
+
+DOcker file:
+# Use an official PHP image as the base
+FROM php:8.2-apache
+
+# Install required packages
+RUN apt-get update && \
+    apt-get install -y \
+    git \
+    unzip \
+    libpng-dev \
+    libjpeg-dev \
+    libfreetype6-dev \
+    && docker-php-ext-configure gd --with-freetype --with-jpeg \
+    && docker-php-ext-install gd \
+    && docker-php-ext-install mysqli
+
+# Enable Apache mod_rewrite
+RUN a2enmod rewrite
+
+# Install Node.js and npm
+RUN curl -sL https://deb.nodesource.com/setup_16.x | bash - && \
+    apt-get install -y nodejs
+
+# Set working directory
+WORKDIR /var/www/html
+
+# Copy application files
+COPY . /var/www/html
+
+# Install PHP dependencies via Composer
+COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
+RUN composer install --no-dev
+
+# Install Node.js dependencies and build assets
+RUN npm install --production
+
+# Set permissions for Apache
+RUN chown -R www-data:www-data /var/www/html
+
+# Expose port 3000
+EXPOSE 3000
+
+
+# Start Apache server
+CMD ["apache2-foreground"]
+
+
+
+
+
+
+
+# # Use an official PHP image as the base
+# FROM php:8.2-apache
+
+# # Install required packages
+# RUN apt-get update && \
+#     apt-get install -y \
+#     git \
+#     unzip \
+#     libpng-dev \
+#     libjpeg-dev \
+#     libfreetype6-dev \
+#     && docker-php-ext-configure gd --with-freetype --with-jpeg \
+#     && docker-php-ext-install gd \
+#     && docker-php-ext-install mysqli
+
+# # Enable Apache mod_rewrite
+# RUN a2enmod rewrite
+
+# # Install Node.js and npm
+# RUN curl -sL https://deb.nodesource.com/setup_16.x | bash - && \
+#     apt-get install -y nodejs
+
+# # Set working directory
+# WORKDIR /var/www/html
+
+# # Copy application files
+# COPY . /var/www/html
+
+# # Install PHP dependencies via Composer
+# COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
+# RUN composer install
+
+# # Install Node.js dependencies and build assets
+# RUN npm install
+
+
+# # Set permissions for Apache
+# RUN chown -R www-data:www-data /var/www/html
+
+# # Expose port 80
+# EXPOSE 80
+
+# # Start Apache server
+# CMD ["apache2-foreground"]
