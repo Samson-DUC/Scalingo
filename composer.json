@@ -1,0 +1,26 @@
+{
+    "name": "leo/sample-php-nodejs",
+    "authors": [
+        {
+            "name": "Soulou",
+            "email": "leo@unbekandt.eu"
+        }
+    ],
+    "require": {
+        "php": ">=8.2.0",
+        "slim/slim": "^4.11",
+        "slim/php-view": "^3.2",
+        "slim/psr7": "^1.6"
+    },
+    "extra": {
+        "paas": {
+            "engines": {
+                "php": "8.2.0"
+            },
+            "compile": [
+                "node_modules/.bin/bower install",
+                "node_modules/.bin/gulp bundle"
+            ]
+        }
+    }
+}
