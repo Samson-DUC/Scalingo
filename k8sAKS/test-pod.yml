@@ -1,0 +1,25 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: mysql-test
+spec:
+  containers:
+  - name: mysql-test
+    image: mysql:8.0
+    env:
+      - name: MYSQL_HOST
+        valueFrom:
+          secretKeyRef:
+            name: mysql-secrets
+            key: mysql-host
+      - name: MYSQL_USER
+        valueFrom:
+          secretKeyRef:
+            name: mysql-secrets
+            key: mysql-user
+      - name: MYSQL_PASSWORD
+        valueFrom:
+          secretKeyRef:
+            name: mysql-secrets
+            key: mysql-password
+    command: ["sleep", "3600"]

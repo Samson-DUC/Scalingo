@@ -1,0 +1,20 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sample-php-nodejs-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: sample-php-nodejs-app
+  template:
+    metadata:
+      labels:
+        app: sample-php-nodejs-app
+    spec:
+      containers:
+      - name: sample-php-nodejs-app
+        image: sample-php-nodejs-app
+        imagePullPolicy: Never
+        ports:
+        - containerPort: 80

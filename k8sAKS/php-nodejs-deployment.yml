@@ -1,0 +1,37 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sample-php-nodejs-app
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: sample-php-nodejs-app
+  template:
+    metadata:
+      labels:
+        app: sample-php-nodejs-app
+    spec:
+      containers:
+      - name: sample-php-nodejs-app
+        image: samsonacr.azurecr.io/sample-php-nodejs-app:v3
+        ports:
+        - containerPort: 80
+        env:
+        - name: MYSQL_HOST
+          valueFrom:
+            secretKeyRef:
+              name: mysql-secrets
+              key: mysql-host
+        - name: MYSQL_USER
+          valueFrom:
+            secretKeyRef:
+              name: mysql-secrets
+              key: mysql-user
+        - name: MYSQL_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: mysql-secrets
+              key: mysql-password
+        - name: MYSQL_DATABASE
+          value: "your_database_name" 
