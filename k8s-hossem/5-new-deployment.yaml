@@ -1,0 +1,59 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: webapp
+  namespace: webapp
+  annotations:
+    kubernetes.io/change-cause: "Redeploying v9 for testing deployment strategy 1"
+spec:
+  replicas: 3
+  strategy:
+    type: Recreate
+    # type: RollingUpdate
+    # rollingUpdate:
+    #   maxSurge: 25%       # Number of additional pods that can be created during an update
+    #   maxUnavailable: 25% 
+  selector:
+    matchLabels:
+      app: webapp
+  template:
+    metadata:
+      labels:
+        app: webapp
+    spec:
+      containers:
+      - name: webapp
+        image: samsonacr.azurecr.io/webapp:v9
+        env:
+          - name: MYSQL_HOST
+            value: "samsonsqlserver.mysql.database.azure.com"
+          - name: MYSQL_USER
+            value: "azureadmin"
+          - name: MYSQL_PASSWORD
+            value: "Testing123456"
+          - name: MYSQL_DATABASE
+            value: "scalingo"
+          # Add an environment variable for the SSL path
+          - name: MYSQL_SSL_CA
+            value: "/etc/mysql-ssl/DigiCertGlobalRootCA.crt.pem"
+        volumeMounts:
+        - name: ssl-cert
+          mountPath: /etc/mysql-ssl
+          readOnly: true
+      volumes:
+      - name: ssl-cert
+        secret:
+          secretName: mysql-ssl-cert
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: webapp
+  namespace: webapp
+spec:
+  type: ClusterIP
+  ports:
+  - port: 80
+    targetPort: 80
+  selector:
+    app: webapp

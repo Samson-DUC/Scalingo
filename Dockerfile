@@ -4,11 +4,11 @@ FROM php:8.2-apache
 # Install Node.js, Gulp, and required dependencies
 RUN curl -sL https://deb.nodesource.com/setup_16.x | bash - && \
     apt-get update && \
-    apt-get install -y nodejs git unzip libpng-dev libjpeg-dev libfreetype6-dev
+    apt-get install -y nodejs git unzip libpng-dev libjpeg-dev libfreetype6-dev libonig-dev libxml2-dev
 
 # Install PHP extensions
 RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
-    && docker-php-ext-install gd
+    && docker-php-ext-install gd mysqli
 
 # Enable Apache rewrite module
 RUN a2enmod rewrite
