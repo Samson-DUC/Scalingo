@@ -88,6 +88,52 @@
 
     </footer>
 
+  <div class="container">
+    <div>
+        <h2>MySQL Database</h2>
+        <p>Below is the list of employees fetched from the MySQL database.</p>
+        <h2>Employee List</h2>
+        <?php
+          // MySQL connection details from environment variables
+          $host = getenv('MYSQL_HOST') ?: 'samsonsqlserver.mysql.database.azure.com';
+          $username = getenv('MYSQL_USER') ?: 'azureadmin';
+          $password = getenv('MYSQL_PASSWORD') ?: 'Testing123456';
+          $database = getenv('MYSQL_DATABASE') ?: 'scalingo';
+          $ssl_ca = getenv('MYSQL_SSL_CA') ?: '/etc/mysql-ssl/DigiCertGlobalRootCA.crt.pem';
+
+          // Initialize MySQLi connection
+          $conn = mysqli_init();
+
+          // Set SSL parameters
+          mysqli_ssl_set($conn, NULL, NULL, $ssl_ca, NULL, NULL);
+
+          // Connect to the database with SSL
+          if (!mysqli_real_connect($conn, $host, $username, $password, $database, 3306, NULL, MYSQLI_CLIENT_SSL)) {
+              die("Connection failed: " . mysqli_connect_error());
+          }
+
+          // Fetch employees
+          $sql = "SELECT id, name FROM employees";
+          $result = $conn->query($sql);
+
+          if ($result->num_rows > 0) {
+              echo "<ul>";
+              // Output data of each row
+              while ($row = $result->fetch_assoc()) {
+                  echo "<li>ID: " . htmlspecialchars($row["id"]) . " - Name: " . htmlspecialchars($row["name"]) . "</li>";
+              }
+              echo "</ul>";
+          } else {
+              echo "0 results";
+          }
+
+          // Close connection
+          $conn->close();
+          ?>
+
+    </div>
+</div>
+
 </div>
 </body>
 </html>

@@ -1,0 +1,37 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: webapp-blue
+  namespace: webapp
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: webapp-blue
+  template:
+    metadata:
+      labels:
+        app: webapp-blue
+    spec:
+      containers:
+      - name: webapp
+        image: samsonacr.azurecr.io/webapp:v9
+        env:
+          - name: MYSQL_HOST
+            value: "samsonsqlserver.mysql.database.azure.com"
+          - name: MYSQL_USER
+            value: "azureadmin"
+          - name: MYSQL_PASSWORD
+            value: "Testing123456"
+          - name: MYSQL_DATABASE
+            value: "scalingo"
+          - name: MYSQL_SSL_CA
+            value: "/etc/mysql-ssl/DigiCertGlobalRootCA.crt.pem"
+        volumeMounts:
+        - name: ssl-cert
+          mountPath: /etc/mysql-ssl
+          readOnly: true
+      volumes:
+      - name: ssl-cert
+        secret:
+          secretName: mysql-ssl-cert
