@@ -1,0 +1,101 @@
+# Stable Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: webapp-stable
+  namespace: webapp
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: webapp
+      version: stable
+  template:
+    metadata:
+      labels:
+        app: webapp
+        version: stable
+    spec:
+      containers:
+      - name: webapp
+        image: samsonacr.azurecr.io/webapp:v8
+        env:
+          - name: MYSQL_HOST
+            value: "samsonsqlserver.mysql.database.azure.com"
+          - name: MYSQL_USER
+            value: "azureadmin"
+          - name: MYSQL_PASSWORD
+            value: "Testing123456"
+          - name: MYSQL_DATABASE
+            value: "scalingo"
+          - name: MYSQL_SSL_CA
+            value: "/etc/mysql-ssl/DigiCertGlobalRootCA.crt.pem"
+        volumeMounts:
+        - name: ssl-cert
+          mountPath: /etc/mysql-ssl
+          readOnly: true
+      volumes:
+      - name: ssl-cert
+        secret:
+          secretName: mysql-ssl-cert
+
+---
+# Canary Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: webapp-canary
+  namespace: webapp
+spec:
+  replicas: 1 # Start with a single replica
+  selector:
+    matchLabels:
+      app: webapp
+      version: canary
+  template:
+    metadata:
+      labels:
+        app: webapp
+        version: canary
+    spec:
+      containers:
+      - name: webapp
+        image: samsonacr.azurecr.io/webapp:v9
+        env:
+          - name: MYSQL_HOST
+            value: "samsonsqlserver.mysql.database.azure.com"
+          - name: MYSQL_USER
+            value: "azureadmin"
+          - name: MYSQL_PASSWORD
+            value: "Testing123456"
+          - name: MYSQL_DATABASE
+            value: "scalingo"
+          - name: MYSQL_SSL_CA
+            value: "/etc/mysql-ssl/DigiCertGlobalRootCA.crt.pem"
+        volumeMounts:
+        - name: ssl-cert
+          mountPath: /etc/mysql-ssl
+          readOnly: true
+      volumes:
+      - name: ssl-cert
+        secret:
+          secretName: mysql-ssl-cert
+
+---
+# Shared Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: webapp
+  namespace: webapp
+spec:
+  type: ClusterIP
+  selector:
+    app: webapp
+  ports:
+  - port: 80
+    targetPort: 80
+  # Distribute traffic
+  selector:
+    app: webapp
+  sessionAffinity: None
