@@ -29,6 +29,10 @@ jobs:
       run: |
         az acr login --name ${{ secrets.ACR_NAME }}
 
+    - name: Set up Kubernetes
+      run: |
+        az aks get-credentials --resource-group scrg --name aks-cluster --overwrite-existing
+
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v2
 
