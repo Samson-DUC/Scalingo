@@ -1,0 +1,54 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: webapp
+  namespace: webapp
+  annotations:
+    kubernetes.io/change-cause: "Updated to dynamically set image tag during CI/CD pipeline"
+spec:
+  replicas: 3
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: webapp
+  template:
+    metadata:
+      labels:
+        app: webapp
+    spec:
+      containers:
+      - name: webapp
+        image: samsonacr.azurecr.io/webapp:latest # Use a placeholder here
+        env:
+          - name: MYSQL_HOST
+            value: "samsonsqlserver.mysql.database.azure.com"
+          - name: MYSQL_USER
+            value: "azureadmin"
+          - name: MYSQL_PASSWORD
+            value: "Testing123456"
+          - name: MYSQL_DATABASE
+            value: "scalingo"
+          - name: MYSQL_SSL_CA
+            value: "/etc/mysql-ssl/DigiCertGlobalRootCA.crt.pem"
+        volumeMounts:
+        - name: ssl-cert
+          mountPath: /etc/mysql-ssl
+          readOnly: true
+      volumes:
+      - name: ssl-cert
+        secret:
+          secretName: mysql-ssl-cert
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: webapp
+  namespace: webapp
+spec:
+  type: ClusterIP
+  ports:
+  - port: 80
+    targetPort: 80
+  selector:
+    app: webapp
